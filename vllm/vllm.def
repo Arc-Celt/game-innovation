@@ -1,0 +1,38 @@
+# apptainer.def
+Bootstrap: docker
+From: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-devel
+
+%post
+    mkdir -p /project
+    mkdir -p /scratch
+    
+    # Update apt-get
+    apt-get update -y
+    apt-get upgrade -y
+    
+    # Install pip and dependencies for vLLM
+    apt-get install -y \
+        build-essential \
+        libopenblas-dev \
+        libomp-dev \
+        git
+    
+    # Install vLLM and its dependencies
+    pip install vllm
+    pip install torch
+    pip install polars
+    pip install tqdm
+    pip install transformers
+    pip install accelerate
+    pip install bitsandbytes>=0.42.0
+    pip install sentence_transformers
+    pip install huggingface_hub --upgrade
+    pip install datasets --upgrade
+    
+    # Clean up to reduce image size
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+%runscript
+    # Command to run when the container is executed
+    exec python3 "$@"
